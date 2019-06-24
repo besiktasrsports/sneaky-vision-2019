@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jun 24 22:59:43 2019
+
+@author: emrec
+"""
+
 import cv2
 import numpy as np
 from networktables import NetworkTables
@@ -51,6 +58,39 @@ def findContourAngle(cnt):
     angle = math.degrees(angle)
     return box, angle
 
+def getYawAngleOfTarget(_moc,fov,midPoint):
+    cameraHorizAngle = 61.0
+    pixelToAngle = float(300/cameraHorizAngle)
+    
+    moc = 150 # moc stands for middle of the camera
+    angleDiff = 0
+    if(moc-midPoint >= 0):
+        angleDiff = moc-midPoint
+        pixelToAngle = -pixelToAngle
+    else:
+        angleDiff = midPoint-moc
+        
+    angleToTurn = float(angleDiff/pixelToAngle)
+    
+    return angleToTurn
+
+def getDistanceToTarget(_moc,fov,midPointY):
+    cameraVeritcalAngle = fov # 45.6  
+    pixelToDistance = float(300/cameraVeritcalAngle)
+    moc = _moc # moc stands for middle of the camera 150
+    distanceAngleDiff = 0
+    if(moc-midPointY >= 0):
+        distanceAngleDiff = moc-midPointY
+        pixelToDistance = -pixelToDistance
+    else:
+        distanceAngleDiff = midPointY-moc
+      
+    distanceAngleDiff = float(distanceAngleDiff/pixelToDistance)     
+    h = 26.2 # to be changed
+    distanceAngleDiff = math.radians(distanceAngleDiff)
+    distanceToGo = abs(h/math.tan(distanceAngleDiff))
+    return distanceToGo
+
 while True:
     
     ret, frame = cap.read()
@@ -59,9 +99,9 @@ while True:
     lower_green = np.array([55,97,177]) # 55 97 177 HSV  121 135 5 RGB
     upper_green = np.array([255,255,255]) #255 255 255 HSV 181 255 95 RGB
     
-    test_image = frame
-    #test_image =  cv2.imread('images/cargo/CargoStraightDark90in.jpg')
-    if len(frame):
+    #test_image = frame
+    test_image =  cv2.imread('images/cargo/CargoStraightDark90in.jpg')
+    if 1:#len(frame):
     
         
         brightness = 1
@@ -75,8 +115,8 @@ while True:
         test_image = cv2.cvtColor(test_image, cv2.COLOR_BGR2HSV)
         
         resizedImage = cv2.resize(test_image,(300,300))
-        # resizedImage = resizedImage[125:300, 0:300]
-        resizedImage = resizedImage[0:150, 0:300]
+        #resizedImage = resizedImage[125:300, 0:300]
+        #resizedImage = resizedImage[0:150, 0:300]
         cv2.imshow('Resized Image', resizedImage)
         staticColorImage = cv2.inRange(resizedImage,lower_green,upper_green)
         cv2.imshow('Static Image', staticColorImage)
@@ -107,7 +147,7 @@ while True:
         contourCounter = 0
         for contour in contours:
             area =  cv2.contourArea(contour)
-            if(area > 50 and area < 200):
+            if(area > 0 ):
                 contourIndexes.append(contourCounter)
             contourCounter += 1
             # print(contourIndexes)
@@ -137,38 +177,13 @@ while True:
             
             
             # calculate yaw
-            cameraHorizAngle = 61.0
-            pixelToAngle = float(300/cameraHorizAngle)
-            
-            moc = 150 # moc stands for middle of the camera
-            angleDiff = 0
-            if(moc-midPoint >= 0):
-                angleDiff = moc-midPoint
-                pixelToAngle = -pixelToAngle
-            else:
-                angleDiff = midPoint-moc
-                
-                 
-            angleToTurn = float(angleDiff/pixelToAngle)
-            sd.putNumber('angle', angleToTurn)
+            print(getYawAngleOfTarget(150,61,midPoint))
+            sd.putNumber('angle', getYawAngleOfTarget(150,61,midPoint))
 
             # calculate pitch -- emre
             
-            cameraVeritcalAngle = 45.6  
-            pixelToDistance = float(300/cameraVeritcalAngle)
-            moc = 150 # moc stands for middle of the camera
-            distanceAngleDiff = 0
-            if(moc-midPointY >= 0):
-                distanceAngleDiff = moc-midPointY
-                pixelToDistance = -pixelToDistance
-            else:
-                distanceAngleDiff = midPointY-moc
-              
-            distanceAngleDiff = float(distanceAngleDiff/pixelToDistance)     
-            h = 26.2 # to be changed
-            distanceAngleDiff = math.radians(distanceAngleDiff)
-            distanceToGo = abs(h/math.tan(distanceAngleDiff))
-            print(distanceToGo)
+            print(getDistanceToTarget(150,45.6,midPointY))
+           
             
             # calculate pitch v2 -- emre
             # https://wpilib.screenstepslive.com/s/currentCS/m/vision/l/288985-identifying-and-processing-the-targets    
