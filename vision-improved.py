@@ -9,15 +9,17 @@ import cv2
 import numpy as np
 from networktables import NetworkTables
 import math
-
+import shapedetector
 
 def nothing(x):
     pass
 
+sdetect = shapedetector.ShapeDetector()
 
-ip = "127.0.0.1" 
-cap = cv2.VideoCapture('images/rocket/testvideo.mp4')
+ip = "10.99.99.2" 
+cap = cv2.VideoCapture(1)# 'images/rocket/testvideo.mp4'
 
+cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
 
 cv2.namedWindow('Colorbars')
 
@@ -42,7 +44,12 @@ cv2.createTrackbar(rh, wnd, 255,   255, nothing)
 NetworkTables.initialize(server = ip)
 sd = NetworkTables.getTable("visiontable")
 
-
+"""
+def getShape(cnt):
+    cnt = imutils.grab_contours(cnt)
+    return sd.detect(cnt)
+"""
+    
 def findContourAngle(cnt):
     rect = cv2.minAreaRect(cnt)
     box = cv2.boxPoints(rect)
@@ -59,24 +66,28 @@ def findContourAngle(cnt):
     return box, angle
 
 def getYawAngleOfTarget(_moc,fov,midPoint):
-    cameraHorizAngle = 61.0
+    cameraHorizAngle = fov
     pixelToAngle = float(300/cameraHorizAngle)
     
     moc = 150 # moc stands for middle of the camera
+    # print(midPoint)
     angleDiff = 0
     if(moc-midPoint >= 0):
         angleDiff = moc-midPoint
         pixelToAngle = -pixelToAngle
     else:
         angleDiff = midPoint-moc
-        
     angleToTurn = float(angleDiff/pixelToAngle)
+    if angleToTurn == 0:
+        return 0.0
     
     return angleToTurn
 
 def getDistanceToTarget(_moc,fov,midPointY):
     cameraVeritcalAngle = fov # 45.6  
-    pixelToDistance = float(300/cameraVeritcalAngle)
+    print("MidPoint: " + str(midPointY))
+    pixelToDistance = float(300.0/cameraVeritcalAngle)
+    print("Pixel To Distance: " + str(pixelToDistance))
     moc = _moc # moc stands for middle of the camera 150
     distanceAngleDiff = 0
     if(moc-midPointY >= 0):
@@ -85,10 +96,19 @@ def getDistanceToTarget(_moc,fov,midPointY):
     else:
         distanceAngleDiff = midPointY-moc
       
-    distanceAngleDiff = float(distanceAngleDiff/pixelToDistance)     
-    h = 26.2 # to be changed
+    distanceAngleDiff = float(distanceAngleDiff/pixelToDistance)
+    print("Angle: " + str(distanceAngleDiff))
+    h = 15 # to be changed
     distanceAngleDiff = math.radians(distanceAngleDiff)
-    distanceToGo = abs(h/math.tan(distanceAngleDiff))
+    if math.tan(distanceAngleDiff) == 0:
+        distanceToGo = 0
+    else:
+        # Add mounting angle to this
+        mountingAngle = math.radians(-5.0)
+        a1a2 = abs(mountingAngle+distanceAngleDiff)
+        print("Total Angle: " + str(math.degrees(a1a2)))
+        distanceToGo = abs(h/math.tan(a1a2))
+    
     return distanceToGo
 
 while True:
@@ -96,16 +116,19 @@ while True:
     ret, frame = cap.read()
     
     
-    lower_green = np.array([55,97,177]) # 55 97 177 HSV  121 135 5 RGB
-    upper_green = np.array([255,255,255]) #255 255 255 HSV 181 255 95 RGB
+    lower_green = np.array([59,244,116]) # 55 97 177 HSV  121 135 5 RGB
+    upper_green = np.array([74,255,255]) #255 255 255 HSV 181 255 95 RGB
     
-    #test_image = frame
-    test_image =  cv2.imread('images/cargo/CargoStraightDark90in.jpg')
-    if 1:#len(frame):
+    test_image = frame
+    
+    # ratio = test_image.shape[0] / float(resized.shape[0])
+
+    #test_image =  cv2.imread('images/cargo/CargoStraightDark90in.jpg')
+    if len(frame):
     
         
         brightness = 1
-        contrast = 100
+        contrast = 1000
         test_image = np.int16(test_image)
         test_image = test_image * (contrast/127+1) - contrast + brightness
         test_image = np.clip(test_image, 0, 255)
@@ -115,7 +138,7 @@ while True:
         test_image = cv2.cvtColor(test_image, cv2.COLOR_BGR2HSV)
         
         resizedImage = cv2.resize(test_image,(300,300))
-        #resizedImage = resizedImage[125:300, 0:300]
+        resizedImage = resizedImage[125:300, 0:300]
         #resizedImage = resizedImage[0:150, 0:300]
         cv2.imshow('Resized Image', resizedImage)
         staticColorImage = cv2.inRange(resizedImage,lower_green,upper_green)
@@ -136,26 +159,38 @@ while True:
         
         maskedImage = cv2.inRange(resizedImage, rgbLow, rgbHigh)
         kernel = np.ones((3,3),np.uint8)
-        openedImage = cv2.morphologyEx(maskedImage, cv2.MORPH_OPEN, kernel)
+        openedImage = cv2.morphologyEx(staticColorImage, cv2.MORPH_OPEN, kernel)
        # kernel = np.ones((3,3),np.uint8)
        # openedImage = cv2.morphologyEx(openedImage, cv2.MORPH_CLOSE, kernel)
         cv2.imshow('Opened', openedImage)
         cv2.imshow('Masked', maskedImage)
         
-        contourImage, contours, hierarchy = cv2.findContours(maskedImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) #cv2.CHAIN_APPROX_SIMPLE)
+        contourImage, contours, hierarchy = cv2.findContours(staticColorImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) #cv2.CHAIN_APPROX_SIMPLE)
         contourIndexes =  []
         contourCounter = 0
+
+            
+        
         for contour in contours:
             area =  cv2.contourArea(contour)
-            if(area > 0 ):
+            if(area > 50 and 300 > area):
                 contourIndexes.append(contourCounter)
             contourCounter += 1
             # print(contourIndexes)
         if(len(contourIndexes) >= 2):
             cnt = contours[contourIndexes[-1]]
             cnt2 = contours[contourIndexes[-2]]
-            # cv2.drawContours(resizedImage,[cnt],0,(255,0,0),4)
-            # cv2.drawContours(resizedImage,[cnt2],0,(255,0,0),4)
+            # if len(cnt) == 2 or len(cnt) == 3:
+                # print(contours)
+                # cnts = imutils.grab_contours(cnt)
+            shape = sdetect.detect(cnt)
+            #print("1:" + shape)
+            shape2 = sdetect.detect(cnt2)
+            #print("2:" + shape2)
+            # print("1 :" + getShape(cnt))
+            # print("2: " + getShape(cnt2))
+            cv2.drawContours(resizedImage,[cnt],0,(255,0,0),4)
+            cv2.drawContours(resizedImage,[cnt2],0,(255,0,0),4)
             x,y,w,h = cv2.boundingRect(cnt) 
             x2,y2,w2,h2 = cv2.boundingRect(cnt2)
             midPoint = int(((x+x2+w2)/2))
@@ -168,21 +203,21 @@ while True:
             angle2 = 90 - angle2
             
             # print(angle1, angle2)
-            
-            if (abs(angle1-angle2) < 5):
+          
+            if (abs(angle1-angle2) < 3):
                 cv2.drawContours(resizedImage,[box1],0,(255,0,0),2)
                 cv2.drawContours(resizedImage,[box2],0,(255,0,0),2)
                 cv2.line(resizedImage,(midPoint,0),(midPoint,300), (0,0,255))
                 cv2.line(resizedImage,(0,midPointY),(300,midPointY), (0,0,255))
-            
+         
             
             # calculate yaw
-            print(getYawAngleOfTarget(150,61,midPoint))
-            sd.putNumber('angle', getYawAngleOfTarget(150,61,midPoint))
-
+            # print(getYawAngleOfTarget(150,80,midPoint))
+            sd.putNumber('angle', getYawAngleOfTarget(150,80,midPoint))
+            
             # calculate pitch -- emre
             
-            print(getDistanceToTarget(150,45.6,midPointY))
+            print(getDistanceToTarget(150,64,midPointY+125))
            
             
             # calculate pitch v2 -- emre
