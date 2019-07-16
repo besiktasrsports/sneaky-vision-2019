@@ -78,6 +78,7 @@ def getYawAngleOfTarget(_moc,fov,midPoint):
     else:
         angleDiff = midPoint-moc
     angleToTurn = float(angleDiff/pixelToAngle)
+    
     if angleToTurn == 0:
         return 0.0
     
@@ -119,12 +120,12 @@ while True:
     lower_green = np.array([59,244,116]) # 55 97 177 HSV  121 135 5 RGB
     upper_green = np.array([74,255,255]) #255 255 255 HSV 181 255 95 RGB
     
-    test_image = frame
+    #test_image = frame
     
     # ratio = test_image.shape[0] / float(resized.shape[0])
 
-    #test_image =  cv2.imread('images/cargo/CargoStraightDark90in.jpg')
-    if len(frame):
+    test_image =  cv2.imread('images/rocket/RocketPanelStraightDark72in.jpg')
+    if (1):#len(frame):
     
         
         brightness = 1
@@ -173,7 +174,7 @@ while True:
         
         for contour in contours:
             area =  cv2.contourArea(contour)
-            if(area > 50 and 300 > area):
+            if(area > 50 and 900 > area):
                 contourIndexes.append(contourCounter)
             contourCounter += 1
             # print(contourIndexes)
@@ -195,7 +196,9 @@ while True:
             x2,y2,w2,h2 = cv2.boundingRect(cnt2)
             midPoint = int(((x+x2+w2)/2))
             midPointY = y+h/2
-            # print(midPointY)
+            cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+            cv2.putText(resizedImage,str(getYawAngleOfTarget(150,80,midPoint)), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+            # print(midPointY)+
             
             
             box1, angle1 = findContourAngle(cnt)
