@@ -37,21 +37,39 @@ else:
 if config.CREATE_TRACKBARS:
     cv2.namedWindow('Colorbars')
 
-    # Assign strings for ease of coding
-    bh='Blue High'
-    bl='Blue Low'
-    gh='Green High'
-    gl='Green Low'
-    rh='Red High'
-    rl='Red Low'
-    wnd='Colorbars'
-    # Begin Creating trackbars for each BGR value
-    cv2.createTrackbar(bl, wnd, 63,   255, nothing)
-    cv2.createTrackbar(bh, wnd, 137,  255, nothing)
-    cv2.createTrackbar(gl, wnd, 127,  255, nothing)
-    cv2.createTrackbar(gh, wnd, 255,  255, nothing)
-    cv2.createTrackbar(rl, wnd, 77,   255, nothing)
-    cv2.createTrackbar(rh, wnd, 255,  255, nothing)
+    # If we are using HSV color space
+    if config.camera["ColorSpace"] == "HSV":
+        bh='Hue High'
+        bl='Hue Low'
+        gh='Saturation High'
+        gl='Saturation Low'
+        rh='Value High'
+        rl='Value Low'
+        wnd='Colorbars'
+        # Begin Creating trackbars for each HSV value
+        cv2.createTrackbar(bl, wnd, config.camera['H_low'],   255, nothing)
+        cv2.createTrackbar(bh, wnd, config.camera['H_high'],  255, nothing)
+        cv2.createTrackbar(gl, wnd, config.camera['S_low'],  255, nothing)
+        cv2.createTrackbar(gh, wnd, config.camera['S_high'],  255, nothing)
+        cv2.createTrackbar(rl, wnd, config.camera['V_low'],   255, nothing)
+        cv2.createTrackbar(rh, wnd, config.camera['V_high'],  255, nothing)
+
+    # If we are using BGR color space
+    else:
+        bh='Blue High'
+        bl='Blue Low'
+        gh='Green High'
+        gl='Green Low'
+        rh='Red High'
+        rl='Red Low'
+        wnd='Colorbars'
+        # Begin Creating trackbars for each BGR value
+        cv2.createTrackbar(bl, wnd, config.camera['B_low'],   255, nothing)
+        cv2.createTrackbar(bh, wnd, config.camera['B_high'],  255, nothing)
+        cv2.createTrackbar(gl, wnd, config.camera['G_low'],  255, nothing)
+        cv2.createTrackbar(gh, wnd, config.camera['G_high'],  255, nothing)
+        cv2.createTrackbar(rl, wnd, config.camera['R_low'],   255, nothing)
+        cv2.createTrackbar(rh, wnd, config.camera['R_high'],  255, nothing)
 
 else:
     if config.camera["ColorSpace"] == "HSV":

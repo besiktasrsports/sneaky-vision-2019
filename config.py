@@ -1,7 +1,7 @@
 # Debug or not
 DEBUG = 1
 # Trackbar or not
-CREATE_TRACKBARS = 0
+CREATE_TRACKBARS = 1
 # Display or not
 DISPLAY = 1
 # Image or Video, if "Video" is given as argument, program will use cv2.VideoCapture
