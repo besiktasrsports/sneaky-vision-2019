@@ -14,3 +14,6 @@ def test_yawAngle():
     assert getAngleToTarget(80.0, 300.0, 300.0) == 40.0
     assert getAngleToTarget(80.0, 225.0, 300.0) == 20.0
     assert getAngleToTarget(80.0, 0.0, 300.0) == -40.0
+
+# TODO: Writes test for distance from yaw method
+

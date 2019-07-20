@@ -6,7 +6,8 @@ CREATE_TRACKBARS = 1
 DISPLAY = 1
 # Image or Video, if "Video" is given as argument, program will use cv2.VideoCapture
 # If "Image" argument is given the program will use cv2.imread
-imageType = "Video" # Image
+imageType = "Video"
+# imageType = "Image"
 # Image/Video source 0 or 1 for webcam or the file path of the video source such as 
 # "images/rocket/RocketPanelStraightDark72in.jpg" or "images/rocket/testvideo.mp4"
 imageSource = 1

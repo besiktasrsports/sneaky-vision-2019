@@ -66,7 +66,7 @@ def getAngleToTarget(
         :param targetX:  The middle point of the target on X axis in pixels
         :param cameraPixelWidth:  Height of the camera frames in pixels
         :type VFOV: float
-        :type targetY: int
+        :type targetX: int
         :type cameraPixelHeight: int
         :return: angle to target
         :rtype: float
@@ -82,7 +82,6 @@ def getAngleToTarget(
     return round(angleToTarget,2)
 
 def findContourAngle(cnt):
-
     '''
 
     Calculates the vertical angle of a given rectangle target contour
@@ -95,6 +94,7 @@ def findContourAngle(cnt):
         :rtype: float array, float
 
     '''
+
     rect = cv2.minAreaRect(cnt)
     box = cv2.boxPoints(rect)
     box = np.int0(box)
@@ -107,3 +107,41 @@ def findContourAngle(cnt):
     angle = math.atan2(float((angleY2 - angleY1)),float((angleX2 - angleX1)))
     angle = math.degrees(angle)
     return box, angle
+
+def getDistanceToTargetFromYaw(
+        HFOV,
+        targetX,
+        edgeX,
+        cameraPixelWidth=300):
+    '''
+
+    Calculates distance to target using yaw angle method
+
+    - **parameters**, **types**, **return** and **return types**::
+
+        :param HFOV: Horizontal FOV of the camera used in degrees,
+        see it's datasheet
+        :param targetX:  The middle point of the target on X axis in pixels
+        :param edgeX: The rightest edge of left rectangle in pixels
+        :param cameraPixelWidth:  Height of the camera frames in pixels
+        :type HFOV: float
+        :type targetX: int
+        :type edgeX: int
+        :type cameraPixelHeight: int
+        :return: distance to target
+        :rtype: float
+
+    '''
+
+    # TODO: Check resolution errors due to 300px res
+    # TODO: May add another angle parameter, as we do not always look perpendicular to the tapes
+    # https://wpilib.screenstepslive.com/s/currentCS/m/vision/l/288985-identifying-and-processing-the-targets
+  
+    pixelPerAngle = float(cameraPixelWidth / HFOV)
+    pixelDifference = float(abs(edgeX - targetX))
+    theta = float(pixelDifference/pixelPerAngle)
+    # 10 cm is the difference between the edge of the leftest tape and middle of two tapes
+    distance = 10.0/math.tan(math.radians(theta))
+    return round(distance,2)
+    
+    

@@ -71,6 +71,7 @@ if config.CREATE_TRACKBARS:
         cv2.createTrackbar(rl, wnd, config.camera['R_low'],   255, nothing)
         cv2.createTrackbar(rh, wnd, config.camera['R_high'],  255, nothing)
 
+# If no trackbars, we use preconfigured values for HSV and BGR
 else:
     if config.camera["ColorSpace"] == "HSV":
         lower_bound = np.array([config.camera['H_low'], config.camera['S_low'], config.camera['V_low']])
@@ -119,7 +120,7 @@ while True:
         filteredImage = cv2.inRange(resizedImage,lower_bound,upper_bound)
 
         if config.DISPLAY:
-            cv2.imshow('Orginal', image)
+            cv2.imshow('Original', image)
             cv2.imshow('Resized Image', resizedImage)
             cv2.imshow('Filtered Image', filteredImage)
 
@@ -158,15 +159,28 @@ while True:
                 # Mark the middle points
                 cv2.line(resizedImage,(midPointX,0),(midPointX,300), (0,0,255))
                 cv2.line(resizedImage,(0,midPointY),(300,midPointY), (0,0,255))
+                # Mark the rightest edge of first rectangle
+                if x < x2:
+                    edgeX = x+w
+                else:
+                    edgeX = x2+w2
+                cv2.line(resizedImage, (edgeX,0), (edgeX,300), (0,255,0))
                 # Calculate yaw angle to target
                 yaw_diff =  getAngleToTarget(config.camera['HFOV'],
                                             midPointX,
                                             config.camera['Size'])
                 # Calculate distance to target
+                """
                 distance_diff = getDistanceToTarget(config.camera['HeightDiff'], 
                                 config.camera['MountAngle'], 
                                 config.camera['VFOV'],
                                 midPointY,
+                                config.camera['Size'])
+                """
+                # Calculate distance to target v2, this works better apparently
+                distance_diff_yaw = getDistanceToTargetFromYaw(config.camera['HFOV'],
+                                midPointX,
+                                edgeX,
                                 config.camera['Size'])
                 # Put a text indicating the angle
                 cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
@@ -174,13 +188,11 @@ while True:
 
                 if config.DEBUG:
                     print("Yaw Angle: " ,str(yaw_diff))
-                    print("Distance: "  , str(distance_diff))
+                    # print("Distance: "  , str(distance_diff))
+                    print("Distance From Yaw: ", str(distance_diff_yaw))
                 # Write the output to networktables
                 sd.putNumber('angle', yaw_diff)
-                sd.putNumber('distance', distance_diff)
-                
-                # TODO: calculate distance v2 -- emre
-                # https://wpilib.screenstepslive.com/s/currentCS/m/vision/l/288985-identifying-and-processing-the-targets    
+                sd.putNumber('distance', distance_diff_yaw)
 
         if config.DISPLAY:   
             cv2.imshow('Final Image', resizedImage)
