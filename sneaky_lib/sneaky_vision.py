@@ -1,5 +1,8 @@
 import math
 import pytest
+import cv2
+import numpy as np
+
 
 
 def getDistanceToTarget(
@@ -44,7 +47,8 @@ def getDistanceToTarget(
     if(a1 + a2 == 0):
         return 0
     distanceToTarget = abs(heightDiff / math.tan(abs(a1 + a2)))
-    return distanceToTarget
+    # Round to show for max two decimals
+    return round(float(distanceToTarget),2)
 
 
 def getAngleToTarget(
@@ -74,20 +78,32 @@ def getAngleToTarget(
     middleOfCamera = cameraPixelWidth / 2.0  # Middle of the camera in pixels
     angleDiff = targetX - middleOfCamera  # Positive is right handside
     angleToTarget = float(angleDiff / pixelPerAngle)
-    return angleToTarget
+    # Round to show for max two decimals
+    return round(angleToTarget,2)
 
+def findContourAngle(cnt):
 
-def test_distance():
-    assert getDistanceToTarget(
-        15.0, -5.0, 64.0, 200, 300) == pytest.approx(53, 5)
-    assert getDistanceToTarget(
-        15.0, 0.0, 64.0, 150, 300) == 0
-    assert getDistanceToTarget(
-        15.0, 5.0, 64.0, 100, 300) == pytest.approx(53, 5)
+    '''
 
+    Calculates the vertical angle of a given rectangle target contour
 
-def test_yawAngle():
-    assert getAngleToTarget(80, 150, 300) == 0
-    assert getAngleToTarget(80, 300, 300) == 40.0
-    assert getAngleToTarget(80, 225, 300) == 20.0
-    assert getAngleToTarget(80, 0, 300) == -40.0
+    - **parameters**, **types**, **return** and **return types**::
+
+        :param cnt: Contours of the target
+        :type cnt: int array
+        :return: bounding box and angle
+        :rtype: float array, float
+
+    '''
+    rect = cv2.minAreaRect(cnt)
+    box = cv2.boxPoints(rect)
+    box = np.int0(box)
+    
+    angleX1 = box[2][0]
+    angleX2 = box[3][0]
+    angleY1 = box[2][1]
+    angleY2 = box[3][1]
+    
+    angle = math.atan2(float((angleY2 - angleY1)),float((angleX2 - angleX1)))
+    angle = math.degrees(angle)
+    return box, angle
