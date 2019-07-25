@@ -140,7 +140,10 @@ def getDistanceToTargetFromYaw(
     pixelDifference = float(abs(edgeX - targetX))
     theta = float(pixelDifference/pixelPerAngle)
     # 10 cm is the difference between the edge of the leftest tape and middle of two tapes
-    distance = 10.0/math.tan(math.radians(theta))
+    thetaRadians = math.radians(theta)
+    if thetaRadians == 0:
+        return round(0,2)
+    distance = 10.0/math.tan(thetaRadians)
     return round(distance,2)
     
     

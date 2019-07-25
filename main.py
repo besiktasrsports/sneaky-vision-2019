@@ -55,7 +55,7 @@ if config.CREATE_TRACKBARS:
         cv2.createTrackbar(rh, wnd, config.camera['V_high'],  255, nothing)
 
     # If we are using BGR color space
-    else:
+    elif config.camera["ColorSpace"] == "BGR":
         bh='Blue High'
         bl='Blue Low'
         gh='Green High'
@@ -76,7 +76,7 @@ else:
     if config.camera["ColorSpace"] == "HSV":
         lower_bound = np.array([config.camera['H_low'], config.camera['S_low'], config.camera['V_low']])
         upper_bound = np.array([config.camera['H_high'], config.camera['S_high'], config.camera['V_high']])
-    else:
+    elif config.camera["ColorSpace"] == "BGR":
         lower_bound = np.array([config.camera['B_low'], config.camera['G_low'], config.camera['R_low']])
         upper_bound = np.array([config.camera['B_high'], config.camera['G_high'], config.camera['R_high']])
 
@@ -87,7 +87,7 @@ while True:
 
     # If an image exists
     if len(image):
-        
+
         # Congifure some camera parameters
         brightness = config.camera['Brightness']
         contrast = config.camera['Contrast']
@@ -105,7 +105,7 @@ while True:
 
         
         # If we are in trackbar mode read the BGR or HSV values from trackbars
-        if config.CREATE_TRACKBARS:
+        if config.CREATE_TRACKBARS and (config.camera["ColorSpace"] == "HSV" or config.camera["ColorSpace"] == "BGR"):
             bLow  = cv2.getTrackbarPos(bl, wnd)
             bHigh = cv2.getTrackbarPos(bh, wnd)
             gLow  = cv2.getTrackbarPos(gl, wnd)
@@ -116,15 +116,20 @@ while True:
             lower_bound = np.array([bLow,gLow,rLow])
             upper_bound = np.array([bHigh,gHigh,rHigh])
 
-        # Filter the image according to given hsv or bgr filters
-        filteredImage = cv2.inRange(resizedImage,lower_bound,upper_bound)
+        # Filter the image according to given Gray, HSV or BGR filters
+        if config.camera["ColorSpace"] == "Gray":
+            filteredImage = cv2.cvtColor(resizedImage, cv2.COLOR_BGR2GRAY)
+            ret2, filteredImage = cv2.threshold(filteredImage, config.camera["Gray_low"], 
+                        config.camera["Gray_high"], 0)
+        else:
+            filteredImage = cv2.inRange(resizedImage,lower_bound,upper_bound)
 
         if config.DISPLAY:
             cv2.imshow('Original', image)
             cv2.imshow('Resized Image', resizedImage)
             cv2.imshow('Filtered Image', filteredImage)
 
-        # Find COntours
+        # Find Contours
         contourImage, contours, hierarchy = cv2.findContours(filteredImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE) #cv2.CHAIN_APPROX_SIMPLE)
         contourIndexes =  []
         contourCounter = 0
@@ -152,7 +157,7 @@ while True:
                 # Middle point of two rectangles in X axis 
                 midPointX = int(((x+x2+w2)/2))
                 # Middle point of any rectangle in Y axis 
-                midPointY = y+h/2
+                midPointY = int(y+h/2)
                 # Draw contours around the rectangles
                 cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
                 cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)

@@ -10,11 +10,16 @@ imageType = "Video"
 # imageType = "Image"
 # Image/Video source 0 or 1 for webcam or the file path of the video source such as 
 # "images/rocket/RocketPanelStraightDark72in.jpg" or "images/rocket/testvideo.mp4"
-imageSource = 1
+imageSource = 0
 # Ip address
 ipAddress = "10.99.99.2"
 # The script to make camera arrangements
-osScript = "v4l2-ctl -d /dev/video1 -c exposure_auto=1 -c exposure_auto_priority=0 -c exposure_absolute=50"
+if imageSource == 0:
+        osScript = "v4l2-ctl -d /dev/video0 -c exposure_auto=1 -c exposure_auto_priority=0 -c exposure_absolute=50"
+elif imageSource == 1:
+        osScript = "v4l2-ctl -d /dev/video1 -c exposure_auto=1 -c exposure_auto_priority=0 -c exposure_absolute=50"
+else:
+        osScript = ""
 # Call OS script or not, close this in WINDOWS
 callOS = 1
 # NetworkTable Name
@@ -32,7 +37,9 @@ camera = { 'HFOV'        : 80.0,  # Horizontal FOV of the camera, see camera dat
            'CropXHigh'   : 300,   # Highest Point in X axis to be cropped
            'CropYLow'    : 125,   # Lowest Point in Y axis to be cropped
            'CropYHigh'   : 300,   # Highest Point in Y axis to be cropped
-           'ColorSpace'  : 'HSV', # Which color space to use default is BGR if not HSV is defined
+           'ColorSpace'  : 'Gray', # Which color space to use  BGR, HSV or Gray
+           'Gray_low'    : 127,
+           'Gray_high'   : 255,
            'H_low'       : 13,    # Lower Hue value to be filtered, 55
            'H_high'      : 255,   # Higher Hue to be filtered
            'S_low'       : 25,    # Lower Saturation to be filtered, 97
