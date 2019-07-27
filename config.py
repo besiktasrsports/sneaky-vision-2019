@@ -30,11 +30,11 @@ camera = { 'HFOV'        : 80.0,   # Horizontal FOV of the camera, see camera da
            'HeightSize'  : 240,    # Resized image height size in pixels (image becomes square)
            'FPS'         : 15,     # FPS of the camera
            'SetSize'     : 0,      # Set size of the camera with cap prop
-           'DoCrop'      : 1,      # Crop the image or don't
+           'DoCrop'      : 0,      # Crop the image or don't
            'DoResize'    : 1,      # Resize the image or don't
            'CropXLow'    : 0,      # Lowest Point in X axis to be cropped
            'CropYLow'    : 125,    # Lowest Point in Y axis to be cropped
-           'ColorSpace'  : 'Gray', # Which color space to use  BGR, HSV or Gray
+           'ColorSpace'  : 'HSV', # Which color space to use  BGR, HSV or Gray
            'Gray_low'    : 127,    # Lower Gray value to be filtered
            'Gray_high'   : 255,    # Higher Gray value to be filtered
            'H_low'       : 13,     # Lower Hue value to be filtered, 55
