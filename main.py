@@ -15,6 +15,8 @@ from sneaky_lib.sneaky_vision import *
 import config
 import os
 import platform
+from imutils.video import WebcamVideoStream
+from imutils.video import FPS
 
 
 def nothing(x):
@@ -30,13 +32,15 @@ if(config.imageType == "Video"):
     if(platform.system() == "Linux" and config.callOS == 1):
         print("Calling OS Script")
         os.system(config.osScript)
-    cap = cv2.VideoCapture(config.imageSource)
+    # cap = cv2.VideoCapture(config.imageSource)
+    cap = WebcamVideoStream(src=config.imageSource).start()
+    fps = FPS().start()
     if config.imageSource == 0 or config.imageSource == 1:
-        cap.set(cv2.CAP_PROP_FPS, 15)
+        # cap.set(cv2.CAP_PROP_FPS, 15)
         if config.camera["SetSize"]:
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera['WidthSize'])
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera['HeightSize'])
-        print("FPS Set To: ", cap.get(cv2.CAP_PROP_FPS))
+        # print("FPS Set To: ", cap.get(cv2.CAP_PROP_FPS))
 else:
     image = cv2.imread(config.imageSource)
 
@@ -90,7 +94,8 @@ else:
 while True:
     
     if(config.imageType == "Video"):
-        ret, image = cap.read()
+        # ret, image = cap.read()
+        image = cap.read()
 
     # If an image exists
     if len(image):
@@ -215,7 +220,12 @@ while True:
 
         if config.DISPLAY:   
             cv2.imshow('Final Image', resizedImage)
+    fps.update()
     keyPressed = cv2.waitKey(1)
     if keyPressed == 27:
         break
+
+fps.stop()
+print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 cv2.destroyAllWindows() # Destroy the windows and close the program

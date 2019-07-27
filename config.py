@@ -10,7 +10,7 @@ imageType = "Video"
 # imageType = "Image"
 # Image/Video source 0 or 1 for webcam or the file path of the video source such as 
 # "images/rocket/RocketPanelStraightDark72in.jpg" or "images/rocket/testvideo.mp4"
-imageSource = 0
+imageSource = 1
 # Ip address
 ipAddress = "10.99.99.2"
 # The script to make camera arrangements
