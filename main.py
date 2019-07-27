@@ -33,8 +33,9 @@ if(config.imageType == "Video"):
     cap = cv2.VideoCapture(config.imageSource)
     if config.imageSource == 0 or config.imageSource == 1:
         cap.set(cv2.CAP_PROP_FPS, 15)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera['HeightSize'])
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera['WidthSize'])
+        if config.camera["SetSize"]:
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera['WidthSize'])
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera['HeightSize'])
         print("FPS Set To: ", cap.get(cv2.CAP_PROP_FPS))
 else:
     image = cv2.imread(config.imageSource)
