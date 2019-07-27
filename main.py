@@ -159,21 +159,19 @@ while True:
             # Get the first two contours
             cnt = contours[contourIndexes[-1]]
             cnt2 = contours[contourIndexes[-2]]
-            
             # Get the vertical angle of the rectangles
             box1, angle1 = findContourAngle(cnt)
             box2, angle2 = findContourAngle(cnt2)
             # We are comparing angles with 90 off, so we need this
             angle2 = 90 - angle2
             # Compare the vertical distance of the rectangles if less than 5 it means we've found it
-            if (abs(angle1-angle2) < 5):
+            if (abs(angle1-angle2) < config.camera['AngleAcc']):
                 x,y,w,h = cv2.boundingRect(cnt) 
                 x2,y2,w2,h2 = cv2.boundingRect(cnt2)
                 # Middle point of two rectangles in X axis 
                 midPointX = int(((x+x2+w2)/2))
                 # Middle point of any rectangle in Y axis 
                 midPointY = int(y+h/2)
-
                 # Mark the rightest edge of first rectangle
                 if x < x2:
                     edgeX = x+w
@@ -183,14 +181,6 @@ while True:
                 yaw_diff =  getAngleToTarget(config.camera['HFOV'],
                                             midPointX,
                                             config.camera['WidthSize'])
-                # Calculate distance to target
-                """
-                distance_diff = getDistanceToTarget(config.camera['HeightDiff'], 
-                                config.camera['MountAngle'], 
-                                config.camera['VFOV'],
-                                midPointY,
-                                config.camera['Size'])
-                """
                 # Calculate distance to target v2, this works better apparently
                 distance_diff_yaw = getDistanceToTargetFromYaw(config.camera['HFOV'],
                                 midPointX,
