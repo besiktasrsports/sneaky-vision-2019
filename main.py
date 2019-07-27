@@ -25,11 +25,17 @@ NetworkTables.initialize(server = ip)
 sd = NetworkTables.getTable(config.networkTableName)
 
 if(config.imageType == "Video"):
-    cap = cv2.VideoCapture(config.imageSource)
     # If the secondary webcam is inserted and we want to call the OS script
     # TODO: Test control for windows here (using import platform.system(), meanwhile you can set config.callOS to 0 from config.py file
-    if(config.imageSource == 1 and platform.system() == "Linux" and config.callOS == 1):
+    if(platform.system() == "Linux" and config.callOS == 1):
+        print("Calling OS Script")
         os.system(config.osScript)
+    cap = cv2.VideoCapture(config.imageSource)
+    if config.imageSource == 0 or config.imageSource == 1:
+        cap.set(cv2.CAP_PROP_FPS, 15)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, config.camera['HeightSize'])
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, config.camera['WidthSize'])
+        print("FPS Set To: ", cap.get(cv2.CAP_PROP_FPS))
 else:
     image = cv2.imread(config.imageSource)
 
@@ -87,7 +93,6 @@ while True:
 
     # If an image exists
     if len(image):
-
         # Congifure some camera parameters
         brightness = config.camera['Brightness']
         contrast = config.camera['Contrast']
@@ -100,8 +105,12 @@ while True:
         if config.camera["ColorSpace"] == "HSV":
             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         
-        resizedImage = cv2.resize(image,(config.camera['Size'], config.camera['Size']))
-        resizedImage = resizedImage[config.camera['CropYLow']:config.camera['CropYHigh'], config.camera['CropXLow']:config.camera['CropXHigh']]
+        if config.camera["DoResize"] == 1:
+            resizedImage = cv2.resize(image,(config.camera['WidthSize'], config.camera['HeightSize']))
+        else:
+            resizedImage = image
+        if config.camera["DoCrop"] == 1:
+            resizedImage = resizedImage[config.camera['CropYLow']:config.camera['HeightSize'], config.camera['CropXLow']:config.camera['WidthSize']]
 
         
         # If we are in trackbar mode read the BGR or HSV values from trackbars
@@ -158,22 +167,16 @@ while True:
                 midPointX = int(((x+x2+w2)/2))
                 # Middle point of any rectangle in Y axis 
                 midPointY = int(y+h/2)
-                # Draw contours around the rectangles
-                cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
-                cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)
-                # Mark the middle points
-                cv2.line(resizedImage,(midPointX,0),(midPointX,300), (0,0,255))
-                cv2.line(resizedImage,(0,midPointY),(300,midPointY), (0,0,255))
+
                 # Mark the rightest edge of first rectangle
                 if x < x2:
                     edgeX = x+w
                 else:
                     edgeX = x2+w2
-                cv2.line(resizedImage, (edgeX,0), (edgeX,300), (0,255,0))
                 # Calculate yaw angle to target
                 yaw_diff =  getAngleToTarget(config.camera['HFOV'],
                                             midPointX,
-                                            config.camera['Size'])
+                                            config.camera['WidthSize'])
                 # Calculate distance to target
                 """
                 distance_diff = getDistanceToTarget(config.camera['HeightDiff'], 
@@ -186,10 +189,20 @@ while True:
                 distance_diff_yaw = getDistanceToTargetFromYaw(config.camera['HFOV'],
                                 midPointX,
                                 edgeX,
-                                config.camera['Size'])
-                # Put a text indicating the angle
-                cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
-                cv2.putText(resizedImage,str(yaw_diff), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+                                config.camera['WidthSize'])
+
+                if config.DISPLAY:
+                    # Put a text indicating the angle
+                    cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+                    cv2.putText(resizedImage,str(yaw_diff), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+                    # Draw contours around the rectangles
+                    cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
+                    cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)
+                    # Mark the middle points
+                    cv2.line(resizedImage,(midPointX,0),(midPointX, config.camera['HeightSize']), (0,0,255))
+                    cv2.line(resizedImage,(0,midPointY),(config.camera['WidthSize'], midPointY), (0,0,255))
+                    # Mark the rightest edge of left contour
+                    cv2.line(resizedImage, (edgeX,0), (edgeX, config.camera['HeightSize']), (0,255,0))
 
                 if config.DEBUG:
                     print("Yaw Angle: " ,str(yaw_diff))
