@@ -15,7 +15,7 @@ from sneaky_lib.sneaky_vision import *
 import config
 import os
 import platform
-from imutils.video import WebcamVideoStream
+from imutils.video import PiVideoStream
 from imutils.video import FPS
 
 
@@ -33,7 +33,7 @@ if(config.imageType == "Video"):
         print("Calling OS Script")
         os.system(config.osScript)
     # cap = cv2.VideoCapture(config.imageSource)
-    cap = WebcamVideoStream(src=config.imageSource).start()
+    cap = PiVideoStream().start()
     fps = FPS().start()
     if config.imageSource == 0 or config.imageSource == 1:
         # cap.set(cv2.CAP_PROP_FPS, 15)
@@ -151,6 +151,7 @@ while True:
 
         for contour in contours:
             area =  cv2.contourArea(contour)
+            print(area)
             if(area > config.filter['MinArea'] and config.filter['MaxArea'] > area):
                 contourIndexes.append(contourCounter)
             contourCounter += 1

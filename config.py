@@ -1,7 +1,7 @@
 # Debug or not
 DEBUG = 1
 # Trackbar or not
-CREATE_TRACKBARS = 0
+CREATE_TRACKBARS = 1
 # Display or not
 DISPLAY = 1
 # Image or Video, if "Video" is given as argument, program will use cv2.VideoCapture
@@ -10,11 +10,11 @@ imageType = "Video"
 # imageType = "Image"
 # Image/Video source 0 or 1 for webcam or the file path of the video source such as 
 # "images/rocket/RocketPanelStraightDark72in.jpg" or "images/rocket/testvideo.mp4"
-imageSource = 1
+imageSource = 0
 # Ip address
 ipAddress = "10.99.99.2"
 # The script to make camera arrangements
-osScript = "v4l2-ctl --device /dev/video1 -c exposure_auto=1 -c exposure_auto_priority=0 -c exposure_absolute=50 --set-fmt-video=width=320,height=240,pixelformat=MJPG -p 15 && v4l2-ctl -d1 --get-fmt-video"
+osScript = "v4l2-ctl --device /dev/video0 -c auto_exposure=1 -c exposure_auto_priority=0 -c exposure_time_absolute=20 --set-fmt-video=width=160,height=120,pixelformat=MJPG -p 15 && v4l2-ctl -d1 --get-fmt-video"
 # Call OS script or not, close this in WINDOWS
 callOS = 1
 # NetworkTable Name
@@ -52,6 +52,6 @@ camera = { 'HFOV'        : 80.0,   # Horizontal FOV of the camera, see camera da
            'R_high'      : 181     # Higher Red value to be filtered
         }
 
-filter = {  'MinArea'  : 20, # Minimum value of area filter in pixels
-            'MaxArea'  : 1500 # Maximum value of area filter in pixels
+filter = {  'MinArea'  : 200, # Minimum value of area filter in pixels
+            'MaxArea'  : 5000 # Maximum value of area filter in pixels
         }
