@@ -156,58 +156,53 @@ while True:
                 contourIndexes.append(contourCounter)
             contourCounter += 1
         # If we have at least 2 contours
-        if(len(contourIndexes) >= 2):
-            # Get the first two contours
+        if(len(contourIndexes) >= 1):
+            # Get the first contour
             cnt = contours[contourIndexes[-1]]
-            cnt2 = contours[contourIndexes[-2]]
             # Get the vertical angle of the rectangles
             box1, angle1 = findContourAngle(cnt)
-            box2, angle2 = findContourAngle(cnt2)
             # We are comparing angles with 90 off, so we need this
-            angle2 = 90 - angle2
             # Compare the vertical distance of the rectangles if less than 5 it means we've found it
-            if (abs(angle1-angle2) < config.camera['AngleAcc']):
-                x,y,w,h = cv2.boundingRect(cnt) 
-                x2,y2,w2,h2 = cv2.boundingRect(cnt2)
-                # Middle point of two rectangles in X axis 
-                midPointX = int(((x+x2+w2)/2))
-                # Middle point of any rectangle in Y axis 
-                midPointY = int(y+h/2)
-                # Mark the rightest edge of first rectangle
-                if x < x2:
-                    edgeX = x+w
-                else:
-                    edgeX = x2+w2
-                # Calculate yaw angle to target
-                yaw_diff =  getAngleToTarget(config.camera['HFOV'],
-                                            midPointX,
-                                            config.camera['WidthSize'])
-                # Calculate distance to target v2, this works better apparently
-                distance_diff_yaw = getDistanceToTargetFromYaw(config.camera['HFOV'],
-                                midPointX,
-                                edgeX,
-                                config.camera['WidthSize'])
+            
+            x,y,w,h = cv2.boundingRect(cnt) 
+            x2,y2,w2,h2 = cv2.boundingRect(cnt2)
+            # Middle point of two rectangles in X axis 
+            midPointX = int(((x+w)/2))
+            # Middle point of any rectangle in Y axis 
+            midPointY = int(y+h/2)
+            # Mark the rightest edge of first rectangle
+            
+            edgeX = x+w
+            # Calculate yaw angle to target
+            yaw_diff =  getAngleToTarget(config.camera['HFOV'],
+                                        midPointX,
+                                        config.camera['WidthSize'])
+            # Calculate distance to target v2, this works better apparently
+            distance_diff_yaw = getDistanceToTargetFromYaw(config.camera['HFOV'],
+                            midPointX,
+                            edgeX,
+                            config.camera['WidthSize'])
 
-                if config.DISPLAY:
-                    # Put a text indicating the angle
-                    cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
-                    cv2.putText(resizedImage,str(yaw_diff), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
-                    # Draw contours around the rectangles
-                    cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
-                    cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)
-                    # Mark the middle points
-                    cv2.line(resizedImage,(midPointX,0),(midPointX, config.camera['HeightSize']), (0,0,255))
-                    cv2.line(resizedImage,(0,midPointY),(config.camera['WidthSize'], midPointY), (0,0,255))
-                    # Mark the rightest edge of left contour
-                    cv2.line(resizedImage, (edgeX,0), (edgeX, config.camera['HeightSize']), (0,255,0))
+            if config.DISPLAY:
+                # Put a text indicating the angle
+                cv2.putText(resizedImage,"Angle :", (x,y-25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+                cv2.putText(resizedImage,str(yaw_diff), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
+                # Draw contours around the rectangles
+                cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
+                cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)
+                # Mark the middle points
+                cv2.line(resizedImage,(midPointX,0),(midPointX, config.camera['HeightSize']), (0,0,255))
+                cv2.line(resizedImage,(0,midPointY),(config.camera['WidthSize'], midPointY), (0,0,255))
+                # Mark the rightest edge of left contour
+                cv2.line(resizedImage, (edgeX,0), (edgeX, config.camera['HeightSize']), (0,255,0))
 
-                if config.DEBUG:
-                    print("Yaw Angle: " ,str(yaw_diff))
-                    # print("Distance: "  , str(distance_diff))
-                    print("Distance From Yaw: ", str(distance_diff_yaw))
-                # Write the output to networktables
-                sd.putNumber('angle', yaw_diff)
-                sd.putNumber('distance', distance_diff_yaw)
+            if config.DEBUG:
+                print("Yaw Angle: " ,str(yaw_diff))
+                # print("Distance: "  , str(distance_diff))
+                print("Distance From Yaw: ", str(distance_diff_yaw))
+            # Write the output to networktables
+            sd.putNumber('angle', yaw_diff)
+            sd.putNumber('distance', distance_diff_yaw)
 
         if config.DISPLAY:   
             cv2.imshow('Final Image', resizedImage)
