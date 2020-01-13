@@ -165,9 +165,8 @@ while True:
             # Compare the vertical distance of the rectangles if less than 5 it means we've found it
             
             x,y,w,h = cv2.boundingRect(cnt) 
-            x2,y2,w2,h2 = cv2.boundingRect(cnt2)
             # Middle point of two rectangles in X axis 
-            midPointX = int(((x+w)/2))
+            midPointX = int(x+w/2)
             # Middle point of any rectangle in Y axis 
             midPointY = int(y+h/2)
             # Mark the rightest edge of first rectangle
@@ -189,7 +188,6 @@ while True:
                 cv2.putText(resizedImage,str(yaw_diff), (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
                 # Draw contours around the rectangles
                 cv2.drawContours(resizedImage,[box1],0,(255,0,0),4)
-                cv2.drawContours(resizedImage,[box2],0,(255,0,0),4)
                 # Mark the middle points
                 cv2.line(resizedImage,(midPointX,0),(midPointX, config.camera['HeightSize']), (0,0,255))
                 cv2.line(resizedImage,(0,midPointY),(config.camera['WidthSize'], midPointY), (0,0,255))
