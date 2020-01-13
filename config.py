@@ -20,8 +20,8 @@ callOS = 1
 # NetworkTable Name
 networkTableName = "visiontable"
 # Camera Properties
-camera = { 'HFOV'        : 80.0,   # Horizontal FOV of the camera, see camera datsheet
-           'VFOV'        : 64.0,   # Vertical FOV of the camera, see camera datasheet
+camera = { 'HFOV'        : 53.50,   # 80.0, Horizontal FOV of the camera, see camera datasheet
+           'VFOV'        : 41.41,   # 64.0, Vertical FOV of the camera, see camera datasheet
            'Brightness'  : 1,      # Brightness of the image
            'Contrast'    : 1000,   # Contrast of the image
            'HeightDiff'  : 15,     # Height difference between camera and target

@@ -146,4 +146,56 @@ def getDistanceToTargetFromYaw(
     distance = 10.0/math.tan(thetaRadians)
     return round(distance,2)
     
+def getPitchToTarget(
+        VFOV,
+        targetY,
+        cameraPixelHeight=300):
+    '''
+
+    Calculates angle to target using yaw angle method
+
+    - **parameters**, **types**, **return** and **return types**::
+
+        :param VFOV: Horizontal FOV of the camera used in degrees,
+        see it's datasheet
+        :param targetY:  The middle point of the target on Y axis in pixels
+        :param cameraPixelWidth:  Height of the camera frames in pixels
+        :type VFOV: float
+        :type targetY: int
+        :type cameraPixelHeight: int
+        :return: angle to target
+        :rtype: float
+
+    '''
+
+    # Pixel per a degree of horizontal difference in height
+    pixelPerAngle = float(cameraPixelHeight / VFOV)
+    middleOfCamera = cameraPixelHeight / 2.0  # Middle of the camera in pixels
+    angleDiff = targetY - middleOfCamera  # Positive is right handside
+    angleToTarget = float(angleDiff / pixelPerAngle)
+    # Round to show for max two decimals
+    return round(angleToTarget,2)
     
+
+def getDistanceToTargetFromPitch(
+        a1,
+        a2,
+        h1,
+        h2):
+    '''
+
+    Calculates distance to target using pitch angle method
+
+    - **parameters**, **types**, **return** and **return types**::
+
+        :param a1:  Mount angle of the camera
+        :param a2:  Pitch angle
+        :param h1:  Height of the camera on the robot
+        :param h2:  Height of the vision target
+        :return: distance to target
+        :rtype: float
+
+    '''
+  
+    distance = (h2-h1) / math.tan(a1+a2)
+    return round(distance,2)

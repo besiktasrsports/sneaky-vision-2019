@@ -1,4 +1,5 @@
 from sneaky_lib.sneaky_vision import *
+import pytest
 
 def test_distance():
     assert getDistanceToTarget(
@@ -16,4 +17,6 @@ def test_yawAngle():
     assert getAngleToTarget(80.0, 0.0, 300.0) == -40.0
 
 # TODO: Writes test for distance from yaw method
-
+def test_pitchAngle():
+    assert getPitchToTarget(40.0, 80.0, 160.0) == 0
+    assert getPitchToTarget(80.0, 300.0, 300.0) == 40.0

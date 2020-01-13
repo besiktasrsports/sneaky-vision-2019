@@ -15,6 +15,7 @@ from sneaky_lib.sneaky_vision import *
 import config
 import os
 import platform
+import time
 from imutils.video import PiVideoStream
 from imutils.video import FPS
 
@@ -90,6 +91,9 @@ else:
     elif config.camera["ColorSpace"] == "BGR":
         lower_bound = np.array([config.camera['B_low'], config.camera['G_low'], config.camera['R_low']])
         upper_bound = np.array([config.camera['B_high'], config.camera['G_high'], config.camera['R_high']])
+
+# Wait for raspberry pi to warm up
+time.sleep(1)
 
 while True:
     
